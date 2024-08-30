@@ -21,22 +21,42 @@ function secondsToHHMMSSMS(timeString) {
 export function transcriptionItemsToSrt(items) {
   let srt = "";
   let i = 1;
-  items
-    .filter((item) => !!item)
-    .forEach((item) => {
+  let sentence = "";
+  let sentenceStartTime = items[0]?.start_time || 0;
+
+  items.forEach((item, index) => {
+    if (!item) return;
+
+    const { start_time, end_time, content } = item;
+
+    // Concatenate words into a sentence
+    sentence += (sentence ? " " : "") + content;
+
+    // Check if the content ends with a punctuation mark or if 1 second has passed
+    if (
+      /[.!?]/.test(content) ||
+      parseFloat(end_time) - parseFloat(sentenceStartTime) >= 1 ||
+      index === items.length - 1 // Ensure the last item is added
+    ) {
       // sequence
       srt += i + "\n";
+
       // timestamp
-      const { start_time, end_time } = item; //52.56
       srt +=
-        secondsToHHMMSSMS(start_time) +
+        secondsToHHMMSSMS(sentenceStartTime) +
         " --> " +
         secondsToHHMMSSMS(end_time) +
         "\n";
+
       // content
-      srt += item.content + "\n";
-      srt += "\n";
+      srt += sentence + "\n\n";
+
+      // Reset for the next sentence
       i++;
-    });
+      sentence = "";
+      sentenceStartTime = end_time;
+    }
+  });
+
   return srt;
 }

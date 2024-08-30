@@ -9,7 +9,6 @@ export default function UploadForm() {
   const router = useRouter();
   async function upload(ev) {
     ev.preventDefault;
-    console.log(ev);
     const files = ev.target.files;
     if (files.length > 0) {
       const file = files[0];
